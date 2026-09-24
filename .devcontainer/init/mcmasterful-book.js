@@ -1,4 +1,5 @@
-use('mcmasterful-books');
+db = db.getSiblingDB("mcmasterful-books");
+db.createCollection("books");
 
 db.books.insertMany([
   {
