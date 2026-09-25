@@ -1,5 +1,5 @@
 import Router from '@koa/router';
-
+import type { Book } from '../../adapter/assignment-2';
 import { getDatabase } from '../db';
 
 const listRouter = new Router();
@@ -57,7 +57,7 @@ function validateFilters(filters: any): boolean {
   });
 }
 
-async function getBooksFromDatabase(): Promise<(Book & { id: string })[]> {
+async function getBooksFromDatabase(): Promise<Book[]> {
   const db = getDatabase();
   const books = await db.collection('books').find({}).toArray();
   return books.map(doc => ({
@@ -69,6 +69,7 @@ async function getBooksFromDatabase(): Promise<(Book & { id: string })[]> {
     image: doc.image
   }));
 }
+
 
 // Filter books by price range - a book matches if it falls within ANY of the filter ranges
 function filterBooks(bookList: Book[], filters: Array<{ from?: string, to?: string }>): Book[] {

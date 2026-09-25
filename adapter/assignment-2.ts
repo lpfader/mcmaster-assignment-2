@@ -11,67 +11,56 @@ export interface Book {
     image: string,
 };
 
-
 async function listBooks(filters?: Array<{from?: number, to?: number}>) : Promise<Book[]>{
     return assignment1.listBooks(filters)
 }
 
-async function createBook(book: Book): Promise<BookID> {
-  const result = await fetch("http://localhost:3000/books", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(book)
-  });
+async function createOrUpdateBook(book: Book): Promise<BookID> {
+    const url = book.id
+        ? `http://localhost:3000/books/${book.id}`
+        : "http://localhost:3000/books";
 
-  if (!result.ok) {
-    throw new Error(`Failed to create book: ${result.statusText}`);
-  }
+    const method = book.id ? "PUT" : "POST";
 
-  const data = await result.json();
-  return data.id;
-}
-
-async function updateBook(book: Book): Promise<BookID> {
-  if (!book.id) throw new Error("Book ID required for update");
-
-  const result = await fetch(`http://localhost:3000/books/${book.id}`, {
-    method: "PUT",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(book)
-  });
-
-  if (!result.ok) {
-    throw new Error(`Failed to update book: ${result.statusText}`);
-  }
-
-  const data = await result.json();
-  return data.id;
-}
-
-
-
-
-async function removeBook(bookId: BookID): Promise<void> {
-    const result = await fetch(`http://localhost:3000/books/${bookId}`, {
-        method: "DELETE"
+    const result = await fetch(url, {
+        method: method,
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify(book)
     });
 
-    // DELETE success = 200 or 204
-    if (!result.ok && result.status !== 204) {
-        throw new Error(`Failed to delete book: ${result.statusText}`);
+    if (!result.ok) {
+        throw new Error(
+            `Failed to ${book.id ? "update" : "create"} book: ${result.status} ${result.statusText}`
+        );
     }
 
+    const data = await result.json();
 
+    return data.id;
 }
 
+async function removeBook(bookId: BookID): Promise<void> {
+    const result = await fetch(
+        `http://localhost:3000/books/${bookId}`,
+        {
+            method: "DELETE"
+        }
+    );
 
+    if (!result.ok) {
+        throw new Error(
+            `Failed to delete book: ${result.status} ${result.statusText}`
+        );
+    }
+}
 
 const assignment = "assignment-2";
 
 export default {
-  assignment: "assignment-2",
-  createBook,
-  updateBook,
-  removeBook,
-  listBooks
+    assignment,
+    createOrUpdateBook,
+    removeBook,
+    listBooks
 };
